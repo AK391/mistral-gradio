@@ -10,16 +10,23 @@ def get_fn(model_name: str, preprocess: Callable, postprocess: Callable, api_key
     def fn(message, history):
         inputs = preprocess(message, history)
         client = Mistral(api_key=api_key)
-        completion = client.chat.complete(
-            model=model_name,
-            messages=inputs["messages"],
-            stream=True,
-        )
-        response_text = ""
-        for chunk in completion:
-            delta = chunk.choices[0].delta.content or ""
-            response_text += delta
-            yield postprocess(response_text)
+        try:
+            # Create the streaming chat completion
+            stream_response = client.chat.stream(
+                model=model_name,
+                messages=inputs["messages"]
+            )
+            
+            response_text = ""
+            for chunk in stream_response:
+                if chunk.data.choices[0].delta.content is not None:
+                    delta = chunk.data.choices[0].delta.content
+                    response_text += delta
+                    yield postprocess(response_text)
+                
+        except Exception as e:
+            print(f"Error during chat completion: {str(e)}")
+            yield "Sorry, there was an error processing your request."
 
     return fn
 
