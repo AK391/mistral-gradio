@@ -79,7 +79,7 @@ def get_interface_args(pipeline):
                     messages.append({"role": "user", "content": content})
                 else:
                     # Handle text-only history messages
-                    messages.append({"role": "user", "content": [{"type": "text", "text": user_msg}]})
+                    messages.append({"role": "user", "content": user_msg})
                 messages.append({"role": "assistant", "content": assistant_msg})
             
             # Process current message
@@ -95,7 +95,7 @@ def get_interface_args(pipeline):
                 messages.append({"role": "user", "content": content})
             else:
                 # Handle text-only input
-                messages.append({"role": "user", "content": [{"type": "text", "text": message}]})
+                messages.append({"role": "user", "content": message})
             
             return {"messages": messages}
 
@@ -128,11 +128,10 @@ def registry(name: str, token: str | None = None, **kwargs):
     fn = get_fn(name, preprocess, postprocess, api_key)
 
     if pipeline == "chat":
-        # Enable multimodal support for vision models
-        is_vision_model = name.startswith("pixtral")
+        # Always enable multimodal support
         interface = gr.ChatInterface(
             fn=fn,
-            multimodal=is_vision_model,
+            multimodal=True,
             **kwargs
         )
     else:
