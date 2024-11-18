@@ -1,5 +1,5 @@
 import os
-from openai import OpenAI
+from mistralai import Mistral
 import gradio as gr
 from typing import Callable
 
@@ -9,8 +9,8 @@ __version__ = "0.0.3"
 def get_fn(model_name: str, preprocess: Callable, postprocess: Callable, api_key: str):
     def fn(message, history):
         inputs = preprocess(message, history)
-        client = OpenAI(api_key=api_key)
-        completion = client.chat.completions.create(
+        client = Mistral(api_key=api_key)
+        completion = client.chat.complete(
             model=model_name,
             messages=inputs["messages"],
             stream=True,
@@ -52,15 +52,15 @@ def get_pipeline(model_name):
 
 def registry(name: str, token: str | None = None, **kwargs):
     """
-    Create a Gradio Interface for a model on OpenAI.
+    Create a Gradio Interface for a model on Mistral AI.
 
     Parameters:
-        - name (str): The name of the OpenAI model.
-        - token (str, optional): The API key for OpenAI.
+        - name (str): The name of the Mistral AI model.
+        - token (str, optional): The API key for Mistral AI.
     """
-    api_key = token or os.environ.get("OPENAI_API_KEY")
+    api_key = token or os.environ.get("MISTRAL_API_KEY")
     if not api_key:
-        raise ValueError("OPENAI_API_KEY environment variable is not set.")
+        raise ValueError("MISTRAL_API_KEY environment variable is not set.")
 
     pipeline = get_pipeline(name)
     inputs, outputs, preprocess, postprocess = get_interface_args(pipeline)
